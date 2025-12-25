@@ -16,13 +16,10 @@ export class CurrencyConverterComponent implements OnInit {
   toAmount: number | null = null;
   loading = false;
   error = '';
-  rates: { [key: string]: number } = {};  // Changed from private to public
+  rates: { [key: string]: number } = {};
   
-  // New features
   lastUpdated: string = '';
   favorites: string[] = [];
-  conversionHistory: { from: string; to: string; fromAmount: number; toAmount: number; date: Date }[] = [];
-  showHistory = false;
   copied = false;
   darkMode = false;
 
@@ -109,17 +106,14 @@ export class CurrencyConverterComponent implements OnInit {
 
   loadFromStorage(): void {
     const savedFavorites = localStorage.getItem('favorites');
-    const savedHistory = localStorage.getItem('conversionHistory');
     const savedDarkMode = localStorage.getItem('darkMode');
     
     if (savedFavorites) this.favorites = JSON.parse(savedFavorites);
-    if (savedHistory) this.conversionHistory = JSON.parse(savedHistory);
     if (savedDarkMode) this.darkMode = JSON.parse(savedDarkMode);
   }
 
   saveToStorage(): void {
     localStorage.setItem('favorites', JSON.stringify(this.favorites));
-    localStorage.setItem('conversionHistory', JSON.stringify(this.conversionHistory));
     localStorage.setItem('darkMode', JSON.stringify(this.darkMode));
   }
 
@@ -150,35 +144,6 @@ export class CurrencyConverterComponent implements OnInit {
     this.filteredToCurrencies.sort(sortFn);
   }
 
-  addToHistory(): void {
-    if (this.fromCurrency && this.toCurrency && this.fromAmount && this.toAmount) {
-      this.conversionHistory.unshift({
-        from: this.fromCurrency,
-        to: this.toCurrency,
-        fromAmount: this.fromAmount,
-        toAmount: this.toAmount,
-        date: new Date()
-      });
-      if (this.conversionHistory.length > 10) {
-        this.conversionHistory.pop();
-      }
-      this.saveToStorage();
-    }
-  }
-
-  loadFromHistory(item: { from: string; to: string; fromAmount: number; toAmount: number }): void {
-    this.fromCurrency = item.from;
-    this.toCurrency = item.to;
-    this.fromAmount = item.fromAmount;
-    this.onCurrencyChange();
-    this.showHistory = false;
-  }
-
-  clearHistory(): void {
-    this.conversionHistory = [];
-    this.saveToStorage();
-  }
-
   copyResult(): void {
     if (this.toAmount !== null) {
       const text = `${this.fromAmount} ${this.fromCurrency} = ${this.toAmount} ${this.toCurrency}`;
@@ -191,10 +156,6 @@ export class CurrencyConverterComponent implements OnInit {
   toggleDarkMode(): void {
     this.darkMode = !this.darkMode;
     this.saveToStorage();
-  }
-
-  toggleHistory(): void {
-    this.showHistory = !this.showHistory;
   }
 
   onFromCurrencySearch(event: Event): void {
@@ -245,7 +206,6 @@ export class CurrencyConverterComponent implements OnInit {
   convertFromAmount(): void {
     if (this.toCurrency && this.fromAmount !== null && this.rates[this.toCurrency]) {
       this.toAmount = +(this.fromAmount * this.rates[this.toCurrency]).toFixed(2);
-      this.addToHistory();
     }
   }
 
