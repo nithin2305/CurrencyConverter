@@ -89,28 +89,3 @@
     (click)="copyResult()">
     {{ copied ? '✓ Copied!' : '📋 Copy Result' }}
   </button>
-
-  <!-- Conversion Rate Info -->
-  <div class="rate-info" *ngIf="fromCurrency && toCurrency && rates[toCurrency]">
-    <p>1 {{ fromCurrency }} = {{ rates[toCurrency] | number:'1.4-4' }} {{ toCurrency }}</p>
-  </div>
-</div>
-  <!-- Copy Button -->
-  <button 
-    class="copy-btn" 
-    *ngIf="fromAmount && toAmount" 
-    (click)="copyResult()">
-    {{ copied ? '✓ Copied!' : '📋 Copy Result' }}
-  </button>
-
-  <!-- Big Result Display -->
-  <div class="result-display" *ngIf="fromAmount && toAmount">
-    <p class="result-label">Result</p>
-    <p class="result-value">{{ toAmount | number:'1.2-2' }} <span class="result-currency">{{ toCurrency }}</span></p>
-    <p class="result-conversion">{{ fromAmount }} {{ fromCurrency }} = {{ toAmount | number:'1.2-2' }} {{ toCurrency }}</p>
-  </div>
-
-  <!-- Conversion Rate Info -->
-  <div class="rate-info" *ngIf="fromCurrency && toCurrency && rates[toCurrency]">
-    <p>1 {{ fromCurrency }} = {{ rates[toCurrency] | number:'1.4-4' }} {{ toCurrency }}</p>
-  </div>
