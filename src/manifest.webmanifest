@@ -1,6 +1,6 @@
 {
-  "name": "Your App Name",
-  "short_name": "YourApp",
+  "name": "Currency Converter",
+  "short_name": "Currency Converter",
   "description": "Convert currencies using real-time exchange rates",
   "theme_color": "#007bff",
   "background_color": "#ffffff",
