@@ -23,7 +23,12 @@
             "assets": [
               "src/favicon.ico",
               "src/assets",
-              "src/manifest.webmanifest"
+              "src/manifest.webmanifest",
+              {
+                "glob": "**/*",
+                "input": "src/.well-known",
+                "output": "/.well-known"
+              }
             ],
             "styles": [
               "src/styles.css"
