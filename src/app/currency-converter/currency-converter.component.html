@@ -1,0 +1,32 @@
+<div class="converter-container">
+  <h1>Currency Converter</h1>
+
+  <p *ngIf="loading">Loading currencies...</p>
+  <p class="error" *ngIf="error">{{ error }}</p>
+
+  <div class="currency-row">
+    <label for="fromCurrency">From Currency:</label>
+    <select id="fromCurrency" [(ngModel)]="fromCurrency" (change)="onCurrencyChange()">
+      <option value="" disabled>Select currency</option>
+      <option *ngFor="let c of currencies" [value]="c">{{ c }}</option>
+    </select>
+    <input
+      type="number"
+      [(ngModel)]="fromAmount"
+      placeholder="Enter amount"
+      (input)="onFromAmountChange()">
+  </div>
+
+  <div class="currency-row">
+    <label for="toCurrency">To Currency:</label>
+    <select id="toCurrency" [(ngModel)]="toCurrency" (change)="onCurrencyChange()">
+      <option value="" disabled>Select currency</option>
+      <option *ngFor="let c of currencies" [value]="c">{{ c }}</option>
+    </select>
+    <input
+      type="number"
+      [(ngModel)]="toAmount"
+      placeholder="Converted amount"
+      (input)="onToAmountChange()">
+  </div>
+</div>
