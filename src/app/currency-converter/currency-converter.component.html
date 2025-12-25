@@ -12,9 +12,32 @@
   <p *ngIf="loading" class="loading">⏳ Loading currencies...</p>
   <p class="error" *ngIf="error">{{ error }}</p>
 
+  <!-- Quick Amounts -->
+  <div class="quick-section">
+    <label>Quick Amount:</label>
+    <div class="quick-buttons">
+      <button 
+        *ngFor="let amount of quickAmounts" 
+        class="quick-btn"
+        [class.active]="fromAmount === amount"
+        (click)="setQuickAmount(amount)">
+        {{ amount }}
+      </button>
+    </div>
+  </div>
+
   <!-- From Currency -->
   <div class="currency-row">
     <label for="fromCurrency">From Currency:</label>
+    <div class="popular-currencies">
+      <button 
+        *ngFor="let c of popularCurrencies" 
+        class="popular-btn"
+        [class.active]="fromCurrency === c"
+        (click)="setFromCurrency(c)">
+        {{ c }}
+      </button>
+    </div>
     <div class="input-with-star">
       <input
         type="text"
@@ -47,9 +70,18 @@
 
   <button class="swap-btn" (click)="swapCurrencies()" title="Swap currencies">⇅</button>
 
-  <!-- To Currency -->
+  <!-- To Currency (Second) -->
   <div class="currency-row">
-    <label for="toCurrency">To Currency:</label>
+    <label for="toCurrency">To Currency 1:</label>
+    <div class="popular-currencies">
+      <button 
+        *ngFor="let c of popularCurrencies" 
+        class="popular-btn"
+        [class.active]="toCurrency === c"
+        (click)="setToCurrency(c)">
+        {{ c }}
+      </button>
+    </div>
     <div class="input-with-star">
       <input
         type="text"
@@ -75,17 +107,102 @@
     </datalist>
   </div>
 
-  <!-- Big Result Display -->
+  <!-- Result for Second Currency -->
   <div class="result-display" *ngIf="fromAmount && toAmount">
-    <p class="result-label">Result</p>
-    <p class="result-value">{{ toAmount | number:'1.2-2' }} <span class="result-currency">{{ toCurrency }}</span></p>
-    <p class="result-conversion">{{ fromAmount }} {{ fromCurrency }} = {{ toAmount | number:'1.2-2' }} {{ toCurrency }}</p>
+    <p class="result-label">{{ toCurrency }}</p>
+    <p class="result-value">{{ toAmount | number:'1.2-2' }}</p>
   </div>
 
-  <!-- Copy Button -->
-  <button 
-    class="copy-btn" 
-    *ngIf="fromAmount && toAmount" 
-    (click)="copyResult()">
-    {{ copied ? '✓ Copied!' : '📋 Copy Result' }}
+  <!-- Third Currency -->
+  <div class="currency-row">
+    <label for="thirdCurrency">To Currency 2:</label>
+    <div class="popular-currencies">
+      <button 
+        *ngFor="let c of popularCurrencies" 
+        class="popular-btn"
+        [class.active]="thirdCurrency === c"
+        (click)="setThirdCurrency(c)">
+        {{ c }}
+      </button>
+    </div>
+    <div class="input-with-star">
+      <input
+        type="text"
+        id="thirdCurrency"
+        [(ngModel)]="thirdCurrency"
+        (input)="onThirdCurrencySearch($event)"
+        (change)="onThirdCurrencyChange()"
+        placeholder="Search currency (e.g., USD, GBP)"
+        list="thirdCurrencyList"
+        autocomplete="off">
+      <button 
+        class="star-btn" 
+        *ngIf="thirdCurrency" 
+        (click)="toggleFavorite(thirdCurrency)"
+        [class.favorited]="isFavorite(thirdCurrency)">
+        {{ isFavorite(thirdCurrency) ? '★' : '☆' }}
+      </button>
+    </div>
+    <datalist id="thirdCurrencyList">
+      <option *ngFor="let c of filteredThirdCurrencies" [value]="c">
+        {{ isFavorite(c) ? '★ ' : '' }}{{ c }} - {{ currencyNames[c] || c }}
+      </option>
+    </datalist>
+  </div>
+
+  <!-- Result for Third Currency -->
+  <div class="result-display third" *ngIf="fromAmount && thirdAmount">
+    <p class="result-label">{{ thirdCurrency }}</p>
+    <p class="result-value">{{ thirdAmount | number:'1.2-2' }}</p>
+  </div>
+
+  <!-- Summary -->
+  <div class="rate-info" *ngIf="fromCurrency && toCurrency && thirdCurrency && toAmount && thirdAmount">
+    <p>{{ fromAmount }} {{ fromCurrency }} = {{ toAmount | number:'1.2-2' }} {{ toCurrency }} = {{ thirdAmount | number:'1.2-2' }} {{ thirdCurrency }}</p>
+  </div>
+
+  <!-- Extras Toggle -->
+  <button class="extras-toggle" (click)="toggleExtras()">
+    {{ showExtras ? '➖ Hide Extras' : '➕ Split Bill & Fees' }}
   </button>
+
+  <!-- Extras Section -->
+  <div class="extras-section" *ngIf="showExtras">
+    <div class="extras-row">
+      <label>💰 Fee %:</label>
+      <input type="number" [(ngModel)]="feePercent" min="0" max="50" placeholder="0">
+    </div>
+    <div class="extras-row">
+      <label>👥 Split between:</label>
+      <div class="split-controls">
+        <button class="split-btn" (click)="splitPeople = splitPeople > 1 ? splitPeople - 1 : 1">-</button>
+        <span class="split-count">{{ splitPeople }}</span>
+        <button class="split-btn" (click)="splitPeople = splitPeople + 1">+</button>
+      </div>
+    </div>
+
+    <!-- Results with Fee & Split -->
+    <div class="extras-results" *ngIf="fromAmount && toAmount && thirdAmount">
+      <div class="extras-result-card">
+        <p class="extras-label">{{ toCurrency }} (with {{ feePercent }}% fee)</p>
+        <p class="extras-value">{{ toAmountWithFee | number:'1.2-2' }}</p>
+        <p class="extras-split">Per person: {{ toAmountPerPerson | number:'1.2-2' }}</p>
+      </div>
+      <div class="extras-result-card green">
+        <p class="extras-label">{{ thirdCurrency }} (with {{ feePercent }}% fee)</p>
+        <p class="extras-value">{{ thirdAmountWithFee | number:'1.2-2' }}</p>
+        <p class="extras-split">Per person: {{ thirdAmountPerPerson | number:'1.2-2' }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Buttons Row -->
+  <div class="buttons-row" *ngIf="fromAmount && toAmount && thirdAmount">
+    <button class="copy-btn" (click)="copyResult()">
+      {{ copied ? '✓ Copied!' : '📋 Copy' }}
+    </button>
+    <button class="share-btn" (click)="shareResult()">
+      📤 Share
+    </button>
+  </div>
+</div>

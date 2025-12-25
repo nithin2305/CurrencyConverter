@@ -1,12 +1,9 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.currencyconverter.app',
-  appName: 'Currency Converter',
-  webDir: 'dist/currency-converter',
-  server: {
-    androidScheme: 'https'
-  }
+  appId: 'com.example.app',
+  appName: 'currency-converter',
+  "webDir": "dist/currency-converter",
 };
 
 export default config;
