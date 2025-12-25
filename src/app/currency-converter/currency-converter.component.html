@@ -1,15 +1,58 @@
-<div class="converter-container">
-  <h1>Currency Converter</h1>
+<div class="converter-container" [class.dark-mode]="darkMode">
+  <div class="header">
+    <h1>💱 Currency Converter</h1>
+    <div class="header-buttons">
+      <button class="icon-btn" (click)="toggleHistory()" title="History">📜</button>
+      <button class="icon-btn" (click)="toggleDarkMode()" title="Toggle dark mode">
+        {{ darkMode ? '☀️' : '🌙' }}
+      </button>
+    </div>
+  </div>
 
-  <p *ngIf="loading">Loading currencies...</p>
+  <p class="last-updated" *ngIf="lastUpdated">Last updated: {{ lastUpdated }}</p>
+  <p *ngIf="loading" class="loading">⏳ Loading currencies...</p>
   <p class="error" *ngIf="error">{{ error }}</p>
 
+  <!-- History Panel -->
+  <div class="history-panel" *ngIf="showHistory">
+    <div class="history-header">
+      <h3>Conversion History</h3>
+      <button class="clear-btn" (click)="clearHistory()">Clear All</button>
+    </div>
+    <div class="history-list" *ngIf="conversionHistory.length > 0">
+      <div class="history-item" *ngFor="let item of conversionHistory" (click)="loadFromHistory(item)">
+        <span>{{ item.fromAmount }} {{ item.from }} → {{ item.toAmount }} {{ item.to }}</span>
+      </div>
+    </div>
+    <p *ngIf="conversionHistory.length === 0" class="no-history">No conversion history yet</p>
+  </div>
+
+  <!-- From Currency -->
   <div class="currency-row">
     <label for="fromCurrency">From Currency:</label>
-    <select id="fromCurrency" [(ngModel)]="fromCurrency" (change)="onCurrencyChange()">
-      <option value="" disabled>Select currency</option>
-      <option *ngFor="let c of currencies" [value]="c">{{ c }}</option>
-    </select>
+    <div class="input-with-star">
+      <input
+        type="text"
+        id="fromCurrency"
+        [(ngModel)]="fromCurrency"
+        (input)="onFromCurrencySearch($event)"
+        (change)="onCurrencyChange()"
+        placeholder="Search currency (e.g., USD, PKR)"
+        list="fromCurrencyList"
+        autocomplete="off">
+      <button 
+        class="star-btn" 
+        *ngIf="fromCurrency" 
+        (click)="toggleFavorite(fromCurrency)"
+        [class.favorited]="isFavorite(fromCurrency)">
+        {{ isFavorite(fromCurrency) ? '★' : '☆' }}
+      </button>
+    </div>
+    <datalist id="fromCurrencyList">
+      <option *ngFor="let c of filteredFromCurrencies" [value]="c">
+        {{ isFavorite(c) ? '★ ' : '' }}{{ c }} - {{ currencyNames[c] || c }}
+      </option>
+    </datalist>
     <input
       type="number"
       [(ngModel)]="fromAmount"
@@ -17,16 +60,58 @@
       (input)="onFromAmountChange()">
   </div>
 
+  <button class="swap-btn" (click)="swapCurrencies()" title="Swap currencies">⇅</button>
+
+  <!-- To Currency -->
   <div class="currency-row">
     <label for="toCurrency">To Currency:</label>
-    <select id="toCurrency" [(ngModel)]="toCurrency" (change)="onCurrencyChange()">
-      <option value="" disabled>Select currency</option>
-      <option *ngFor="let c of currencies" [value]="c">{{ c }}</option>
-    </select>
+    <div class="input-with-star">
+      <input
+        type="text"
+        id="toCurrency"
+        [(ngModel)]="toCurrency"
+        (input)="onToCurrencySearch($event)"
+        (change)="onCurrencyChange()"
+        placeholder="Search currency (e.g., EUR, INR)"
+        list="toCurrencyList"
+        autocomplete="off">
+      <button 
+        class="star-btn" 
+        *ngIf="toCurrency" 
+        (click)="toggleFavorite(toCurrency)"
+        [class.favorited]="isFavorite(toCurrency)">
+        {{ isFavorite(toCurrency) ? '★' : '☆' }}
+      </button>
+    </div>
+    <datalist id="toCurrencyList">
+      <option *ngFor="let c of filteredToCurrencies" [value]="c">
+        {{ isFavorite(c) ? '★ ' : '' }}{{ c }} - {{ currencyNames[c] || c }}
+      </option>
+    </datalist>
     <input
       type="number"
       [(ngModel)]="toAmount"
       placeholder="Converted amount"
       (input)="onToAmountChange()">
+  </div>
+
+  <!-- Copy Button -->
+  <button 
+    class="copy-btn" 
+    *ngIf="fromAmount && toAmount" 
+    (click)="copyResult()">
+    {{ copied ? '✓ Copied!' : '📋 Copy Result' }}
+  </button>
+
+  <!-- Big Result Display -->
+  <div class="result-display" *ngIf="fromAmount && toAmount">
+    <p class="result-label">Result</p>
+    <p class="result-value">{{ toAmount | number:'1.2-2' }} <span class="result-currency">{{ toCurrency }}</span></p>
+    <p class="result-conversion">{{ fromAmount }} {{ fromCurrency }} = {{ toAmount | number:'1.2-2' }} {{ toCurrency }}</p>
+  </div>
+
+  <!-- Conversion Rate Info -->
+  <div class="rate-info" *ngIf="fromCurrency && toCurrency && rates[toCurrency]">
+    <p>1 {{ fromCurrency }} = {{ rates[toCurrency] | number:'1.4-4' }} {{ toCurrency }}</p>
   </div>
 </div>
