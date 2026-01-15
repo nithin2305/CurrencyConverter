@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.currencyconverter.app",
+      "sha256_cert_fingerprints": [
+        "4E:74:25:BB:56:76:2A:20:6C:4F:20:E8:BC:0D:A5:1F:95:B6:20:40:55:84:CA:DA:84:01:B6:43:8A:03:AE:83"
+      ]
+    }
+  }
+]
