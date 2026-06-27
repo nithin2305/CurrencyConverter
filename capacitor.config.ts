@@ -1,14 +1,10 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.example.currency',
+  appId: 'com.example.app',
   appName: 'CurrencyConverter',
   webDir: 'dist/currency-converter',
-  bundledWebRuntime: false,
-  server: {
-    url: 'https://currencyconverternithin.netlify.app',
-    cleartext: false
-  }
+  bundledWebRuntime: false
 };
 
 export default config;

@@ -205,4 +205,60 @@
       📤 Share
     </button>
   </div>
+
+  <!-- Daily Notification -->
+  <button class="extras-toggle" (click)="toggleNotifPanel()">
+    {{ showNotifPanel ? '➖ Hide Daily Notification' : '🔔 Daily Rate Notification' }}
+  </button>
+
+  <div class="notif-section" *ngIf="showNotifPanel">
+    <p class="notif-hint" *ngIf="!isNativeApp">
+      ⚠️ Daily notifications run only in the installed Android app. Settings here are a preview.
+    </p>
+
+    <div class="notif-row toggle-row">
+      <label>Send a notification every day</label>
+      <label class="switch">
+        <input type="checkbox" [(ngModel)]="notifEnabled">
+        <span class="slider"></span>
+      </label>
+    </div>
+
+    <div class="notif-row">
+      <label>Time</label>
+      <input type="time" [(ngModel)]="notifTime" class="time-input">
+    </div>
+
+    <div class="notif-pairs">
+      <label class="pairs-title">Currency pairs to include</label>
+
+      <div class="pair-chip" *ngFor="let p of notifPairs; let i = index">
+        <span>1 {{ p.base }} &#8594; {{ p.quote }}</span>
+        <button class="remove-pair" (click)="removeNotifPair(i)" title="Remove">&#10005;</button>
+      </div>
+      <p class="notif-hint" *ngIf="notifPairs.length === 0">No pairs yet — add one below.</p>
+
+      <div class="add-pair-row">
+        <input type="text" [(ngModel)]="newPairBase" placeholder="USD"
+               list="notifCurrencyList" class="pair-input" autocomplete="off">
+        <span class="arrow">&#8594;</span>
+        <input type="text" [(ngModel)]="newPairQuote" placeholder="INR"
+               list="notifCurrencyList" class="pair-input" autocomplete="off">
+        <button class="add-pair-btn" (click)="addNotifPair()">+ Add</button>
+      </div>
+      <datalist id="notifCurrencyList">
+        <option *ngFor="let c of currencies" [value]="c">{{ currencyNames[c] || c }}</option>
+      </datalist>
+    </div>
+
+    <div class="notif-buttons">
+      <button class="save-notif-btn" (click)="saveNotifSettings()">💾 Save</button>
+      <button class="test-notif-btn" (click)="testNotification()">🔔 Test now</button>
+    </div>
+
+    <p class="notif-saved" *ngIf="notifSavedMsg">{{ notifSavedMsg }}</p>
+    <p class="notif-hint" *ngIf="isNativeApp && notifEnabled && !notifHasPermission">
+      Notification permission not granted yet — tap Save and allow it.
+    </p>
+  </div>
 </div>

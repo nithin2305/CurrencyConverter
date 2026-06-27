@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CurrencyService } from '../currency.service';
+import { NotificationService, RatePair } from '../notification.service';
 
 @Component({
   selector: 'app-currency-converter',
@@ -32,7 +33,18 @@ export class CurrencyConverterComponent implements OnInit {
   showExtras = false;
   splitPeople: number = 2;
   feePercent: number = 0;
-  
+
+  // Daily notification settings
+  isNativeApp = false;
+  showNotifPanel = false;
+  notifEnabled = false;
+  notifTime = '10:00';
+  notifPairs: RatePair[] = [{ base: 'USD', quote: 'INR' }];
+  notifHasPermission = false;
+  notifSavedMsg = '';
+  newPairBase = 'USD';
+  newPairQuote = 'INR';
+
   currencyNames: { [key: string]: string } = {
     USD: 'US Dollar',
     EUR: 'Euro',
@@ -109,10 +121,14 @@ export class CurrencyConverterComponent implements OnInit {
     return +(this.thirdAmountWithFee / this.splitPeople).toFixed(2);
   }
 
-  constructor(private currencyService: CurrencyService) {}
+  constructor(
+    private currencyService: CurrencyService,
+    private notificationService: NotificationService
+  ) {}
 
   ngOnInit(): void {
     this.loadFromStorage();
+    this.initNotifications();
     this.loading = true;
     this.currencyService.getCurrencies().subscribe({
       next: (data) => {
@@ -321,5 +337,95 @@ export class CurrencyConverterComponent implements OnInit {
     } else {
       this.copyResult();
     }
+  }
+
+  // ===== Daily notification settings =====
+
+  async initNotifications(): Promise<void> {
+    this.isNativeApp = this.notificationService.isNative;
+    if (!this.isNativeApp) return;
+    try {
+      const status = await this.notificationService.getStatus();
+      this.notifEnabled = status.enabled;
+      this.notifHasPermission = status.hasPermission;
+      this.notifTime = this.toTimeString(status.hour, status.minute);
+      if (status.pairs && status.pairs.length) {
+        this.notifPairs = status.pairs;
+      }
+    } catch {
+      // Plugin unavailable; leave defaults.
+    }
+  }
+
+  toggleNotifPanel(): void {
+    this.showNotifPanel = !this.showNotifPanel;
+  }
+
+  private toTimeString(hour: number, minute: number): string {
+    const h = String(hour ?? 10).padStart(2, '0');
+    const m = String(minute ?? 0).padStart(2, '0');
+    return `${h}:${m}`;
+  }
+
+  private parseTime(): { hour: number; minute: number } {
+    const [h, m] = (this.notifTime || '10:00').split(':');
+    return { hour: parseInt(h, 10) || 0, minute: parseInt(m, 10) || 0 };
+  }
+
+  addNotifPair(): void {
+    const base = (this.newPairBase || '').toUpperCase().trim();
+    const quote = (this.newPairQuote || '').toUpperCase().trim();
+    if (!base || !quote || base === quote) return;
+    const exists = this.notifPairs.some(p => p.base === base && p.quote === quote);
+    if (!exists) {
+      this.notifPairs.push({ base, quote });
+    }
+  }
+
+  removeNotifPair(index: number): void {
+    this.notifPairs.splice(index, 1);
+  }
+
+  async saveNotifSettings(): Promise<void> {
+    if (!this.isNativeApp) {
+      this.notifSavedMsg = 'Notifications work only in the installed Android app.';
+      return;
+    }
+    const { hour, minute } = this.parseTime();
+    try {
+      if (this.notifEnabled) {
+        const perm = await this.notificationService.requestPermission();
+        this.notifHasPermission = perm.granted;
+      }
+      const status = await this.notificationService.schedule({
+        enabled: this.notifEnabled,
+        hour,
+        minute,
+        pairs: this.notifPairs
+      });
+      this.notifHasPermission = status.hasPermission;
+      this.notifSavedMsg = this.notifEnabled
+        ? `Saved. You'll get a notification daily at ${this.notifTime}.`
+        : 'Daily notifications turned off.';
+    } catch {
+      this.notifSavedMsg = 'Could not save settings.';
+    }
+    setTimeout(() => (this.notifSavedMsg = ''), 4000);
+  }
+
+  async testNotification(): Promise<void> {
+    if (!this.isNativeApp) {
+      this.notifSavedMsg = 'Test works only in the installed Android app.';
+      setTimeout(() => (this.notifSavedMsg = ''), 4000);
+      return;
+    }
+    try {
+      await this.notificationService.requestPermission();
+      await this.notificationService.triggerNow();
+      this.notifSavedMsg = 'Test notification sent — check your status bar.';
+    } catch {
+      this.notifSavedMsg = 'Could not send test notification.';
+    }
+    setTimeout(() => (this.notifSavedMsg = ''), 4000);
   }
 }
