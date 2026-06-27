@@ -24,7 +24,7 @@
   "appVersionCode": 4,
   "shortcuts": [],
   "generatorApp": "bubblewrap-cli",
-  "webManifestUrl": "https://currencyconverternithin.netlify.app/manifest.webmanifest",
+  "webManifestUrl": "https://nithin2305.github.io/CurrencyConverter/manifest.webmanifest",
   "fallbackType": "customtabs",
   "features": {},
   "alphaDependencies": {
